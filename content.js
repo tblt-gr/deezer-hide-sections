@@ -1,7 +1,6 @@
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
-const hiddenModules = new Set();
-const moduleTitles = {};
+const hiddenSections = {};
 
 let hideButtonSvg = '';
 
@@ -11,28 +10,24 @@ async function loadSvg() {
     hideButtonSvg = await response.text();
 }
 
-function setHidden(ids) {
-    hiddenModules.clear();
-
-    for (const id of ids ?? []) {
-        hiddenModules.add(id);
+function setHidden(sections) {
+    for (const key of Object.keys(hiddenSections)) {
+        delete hiddenSections[key];
     }
+
+    Object.assign(hiddenSections, sections ?? {});
 }
 
 async function persist() {
-    await browserAPI.storage.local.set({
-        hiddenModules: [...hiddenModules],
-        moduleTitles,
-    });
+    await browserAPI.storage.local.set({ hiddenSections });
 }
 
 async function init() {
     await loadSvg();
 
-    const result = await browserAPI.storage.local.get(['hiddenModules', 'moduleTitles']);
+    const result = await browserAPI.storage.local.get('hiddenSections');
 
-    setHidden(result.hiddenModules);
-    Object.assign(moduleTitles, result.moduleTitles ?? {});
+    setHidden(result.hiddenSections);
 
     processSections();
 
@@ -50,16 +45,8 @@ async function init() {
             return;
         }
 
-        if (changes.moduleTitles) {
-            for (const key of Object.keys(moduleTitles)) {
-                delete moduleTitles[key];
-            }
-
-            Object.assign(moduleTitles, changes.moduleTitles.newValue ?? {});
-        }
-
-        if (changes.hiddenModules) {
-            setHidden(changes.hiddenModules.newValue);
+        if (changes.hiddenSections) {
+            setHidden(changes.hiddenSections.newValue);
             syncVisibility();
         }
     });
@@ -67,7 +54,7 @@ async function init() {
 
 function syncVisibility() {
     document.querySelectorAll('section[data-module-id]').forEach(section => {
-        const hidden = hiddenModules.has(section.dataset.moduleId);
+        const hidden = Object.hasOwn(hiddenSections, section.dataset.moduleId);
         section.classList.toggle('dhs-hidden', hidden);
     });
 }
@@ -92,7 +79,7 @@ function processSections() {
 
         section.dataset.moduleId = sectionId;
 
-        if (hiddenModules.has(sectionId)) {
+        if (Object.hasOwn(hiddenSections, sectionId)) {
             section.classList.add('dhs-hidden');
         }
 
@@ -125,8 +112,7 @@ function addButton(section, moduleId) {
         const clone = title.cloneNode(true);
         clone.querySelectorAll('.dhs-hide-button, .chakra-button, a, button').forEach(el => el.remove());
 
-        hiddenModules.add(moduleId);
-        moduleTitles[moduleId] = clone.textContent.trim() || moduleId;
+        hiddenSections[moduleId] = clone.textContent.trim() || moduleId;
 
         await persist();
 

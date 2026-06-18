@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="import.css">
+</head>
+<body>
+    <h1>Import hidden sections</h1>
+    <p class="dhs-hint">Select a JSON file previously exported from this extension.</p>
+    <div class="dhs-toolbar">
+        <button type="button" id="dhs-pick">Choose file…</button>
+        <input type="file" id="dhs-file" accept="application/json,.json" hidden>
+    </div>
+    <p id="dhs-status" class="dhs-status" role="status" hidden></p>
+    <script src="import.js"></script>
+</body>
+</html>

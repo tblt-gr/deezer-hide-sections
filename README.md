@@ -24,25 +24,17 @@ Lightweight content script that injects a **hide button** next to every section 
 
 ## Screenshots
 
-<table align="center">                                                                                                            
-  <tr>                                                                                                                            
-    <td align="center" width="50%">                                                                                               
-      <img src=".github/assets/screenshots/hide_sections_button.png" width="100%" alt="Hide button next to a Deezer section title"
-><br>                                                                                                                             
-      <sub>Hide button next to a section title</sub>                                                                              
-    </td>                                                                                                                         
-    <td align="center" width="50%">                                                                                               
-      <img src=".github/assets/screenshots/extension_panel.png" width="100%" alt="Popup panel listing hidden sections with a Show 
-button each"><br>                                                                                                                 
-      <sub>Restore panel — show hidden sections</sub>                                                                             
-    </td>                                                                                                                         
-  </tr>                                                                                                                           
-</table>
+<p align="center">
+  <img src=".github/assets/screenshots/hide_sections_button.png" alt="Hide button next to a section title" height="280">
+  <img src=".github/assets/screenshots/extension_panel.png" alt="Popup panel listing hidden sections with export and import" height="280">
+  <img src=".github/assets/screenshots/import_panel.png" alt="Import page with a file picker for an exported JSON file" height="280">
+</p>
 
 ## Features
 
 - **One-click hide** — hide button injected next to every section title
 - **Restore panel** — popup lists hidden sections by title; one click to show again
+- **Export / Import** — back up hidden sections to a JSON file and restore them on another browser
 - **Persistent** — hidden sections stored locally, survive page reloads
 - **Live sync** — restoring from the popup reveals the section without a reload
 - **Dynamic** — `MutationObserver` handles Deezer's lazy-loaded content
@@ -74,6 +66,10 @@ button each"><br>
 
 **Restore** — click the extension icon in the toolbar to open the panel, then click **Show** next to the section you want back. It reappears instantly, no reload needed.
 
+**Export** — open the panel and click **Export**. A `deezer-hidden-sections-<date>.json` file is downloaded, holding an `{ id: title }` map of every hidden section.
+
+**Import** — open the panel and click **Import**. It opens a dedicated page where you select a previously exported JSON file; the sections are merged into your current list.
+
 ## Project Structure
 
 ```
@@ -83,7 +79,11 @@ button each"><br>
 ├── popup/
 │   ├── popup.html      Restore panel markup
 │   ├── popup.css       Panel styles
-│   └── popup.js        Lists hidden sections, handles restore
+│   └── popup.js        Lists hidden sections, handles restore & export
+├── import/
+│   ├── import.html     Import page markup
+│   ├── import.css      Import page styles
+│   └── import.js       Reads a JSON file, merges sections into storage
 └── icons/
     ├── hide-button.svg Hide button icon (injected into page)
     ├── icon16.png

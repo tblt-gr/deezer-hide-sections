@@ -1,0 +1,48 @@
+body {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: system-ui, sans-serif;
+    color: #fff;
+    background: #1a1a1a;
+}
+
+h1 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.dhs-hint {
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.dhs-toolbar {
+    margin: 0 0 16px;
+}
+
+.dhs-toolbar button {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: #fff;
+    background: #a238ff;
+}
+
+.dhs-toolbar button:hover {
+    opacity: 0.85;
+}
+
+.dhs-status {
+    margin: 0;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.dhs-status.dhs-error {
+    color: #ff6b6b;
+}
