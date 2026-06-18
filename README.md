@@ -51,6 +51,12 @@ button each"><br>
 
 ## Installation
 
+### Via Releases (Recommended)
+
+1. Download the latest ZIP version from the [Releases](https://github.com/tblt-gr/deezer-hide-sections/releases) tab.
+2. Extract the archive on your computer.
+3. Follow the instructions below based on your browser.
+
 ### Chrome
 
 1. Go to `chrome://extensions`

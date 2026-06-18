@@ -1,0 +1,37 @@
+name: Package Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from manifest
+        id: get_version
+        run: |
+          VERSION=$(grep '"version":' manifest.json | cut -d'"' -f4)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Create ZIP archive
+        run: |
+          zip -r deezer-hide-sections-${{ env.VERSION }}.zip manifest.json content.js content.css icons popup
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: deezer-hide-sections-${{ env.VERSION }}.zip
+          name: v${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
