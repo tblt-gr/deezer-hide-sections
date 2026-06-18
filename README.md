@@ -22,16 +22,29 @@
 
 Lightweight content script that injects a **hide button** next to every section title on `deezer.com`. Hidden sections are persisted in browser storage — they stay hidden across reloads and navigation.
 
-## Screenshot
+## Screenshots
 
-<p align="center">
-  <img src=".github/assets/screenshots/hide_sections_button.png" width="80%" alt="Hide button next to a Deezer section title">
-</p>
+<table align="center">                                                                                                            
+  <tr>                                                                                                                            
+    <td align="center" width="50%">                                                                                               
+      <img src=".github/assets/screenshots/hide_sections_button.png" width="100%" alt="Hide button next to a Deezer section title"
+><br>                                                                                                                             
+      <sub>Hide button next to a section title</sub>                                                                              
+    </td>                                                                                                                         
+    <td align="center" width="50%">                                                                                               
+      <img src=".github/assets/screenshots/extension_panel.png" width="100%" alt="Popup panel listing hidden sections with a Show 
+button each"><br>                                                                                                                 
+      <sub>Restore panel — show hidden sections</sub>                                                                             
+    </td>                                                                                                                         
+  </tr>                                                                                                                           
+</table>
 
 ## Features
 
 - **One-click hide** — hide button injected next to every section title
+- **Restore panel** — popup lists hidden sections by title; one click to show again
 - **Persistent** — hidden sections stored locally, survive page reloads
+- **Live sync** — restoring from the popup reveals the section without a reload
 - **Dynamic** — `MutationObserver` handles Deezer's lazy-loaded content
 - **Zero dependencies** — plain JS + CSS, no build step required
 - **Cross-browser** — works on Chrome (MV3) and Firefox (109+)
@@ -51,17 +64,9 @@ Lightweight content script that injects a **hide button** next to every section 
 
 ## Usage
 
-Click the **⊘** button next to any section title to hide it.
+**Hide** — click the **⊘** button next to any section title.
 
-To restore a hidden section, remove its entry from extension storage via the browser console:
-
-```js
-// Chrome
-chrome.storage.local.remove('hiddenModules');
-
-// Firefox
-browser.storage.local.remove('hiddenModules');
-```
+**Restore** — click the extension icon in the toolbar to open the panel, then click **Show** next to the section you want back. It reappears instantly, no reload needed.
 
 ## Project Structure
 
@@ -69,6 +74,10 @@ browser.storage.local.remove('hiddenModules');
 ├── manifest.json       Extension manifest (MV3)
 ├── content.js          Content script — injects buttons, handles hide logic
 ├── content.css         Styles for the hide button and hidden state
+├── popup/
+│   ├── popup.html      Restore panel markup
+│   ├── popup.css       Panel styles
+│   └── popup.js        Lists hidden sections, handles restore
 └── icons/
     ├── hide-button.svg Hide button icon (injected into page)
     ├── icon16.png

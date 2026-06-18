@@ -1,6 +1,7 @@
 const browserAPI = typeof browser !== 'undefined' ? browser : chrome;
 
 const hiddenModules = new Set();
+const moduleTitles = {};
 
 let hideButtonSvg = '';
 
@@ -10,14 +11,28 @@ async function loadSvg() {
     hideButtonSvg = await response.text();
 }
 
+function setHidden(ids) {
+    hiddenModules.clear();
+
+    for (const id of ids ?? []) {
+        hiddenModules.add(id);
+    }
+}
+
+async function persist() {
+    await browserAPI.storage.local.set({
+        hiddenModules: [...hiddenModules],
+        moduleTitles,
+    });
+}
+
 async function init() {
     await loadSvg();
 
-    const result = await browserAPI.storage.local.get(['hiddenModules']);
+    const result = await browserAPI.storage.local.get(['hiddenModules', 'moduleTitles']);
 
-    for (const id of result.hiddenModules ?? []) {
-        hiddenModules.add(id);
-    }
+    setHidden(result.hiddenModules);
+    Object.assign(moduleTitles, result.moduleTitles ?? {});
 
     processSections();
 
@@ -28,6 +43,32 @@ async function init() {
     observer.observe(document.body, {
         childList: true,
         subtree: true,
+    });
+
+    browserAPI.storage.onChanged.addListener((changes, area) => {
+        if (area !== 'local') {
+            return;
+        }
+
+        if (changes.moduleTitles) {
+            for (const key of Object.keys(moduleTitles)) {
+                delete moduleTitles[key];
+            }
+
+            Object.assign(moduleTitles, changes.moduleTitles.newValue ?? {});
+        }
+
+        if (changes.hiddenModules) {
+            setHidden(changes.hiddenModules.newValue);
+            syncVisibility();
+        }
+    });
+}
+
+function syncVisibility() {
+    document.querySelectorAll('section[data-module-id]').forEach(section => {
+        const hidden = hiddenModules.has(section.dataset.moduleId);
+        section.classList.toggle('dhs-hidden', hidden);
     });
 }
 
@@ -81,11 +122,13 @@ function addButton(section, moduleId) {
         event.preventDefault();
         event.stopPropagation();
 
-        hiddenModules.add(moduleId);
+        const clone = title.cloneNode(true);
+        clone.querySelectorAll('.dhs-hide-button, .chakra-button, a, button').forEach(el => el.remove());
 
-        await browserAPI.storage.local.set({
-            hiddenModules: [...hiddenModules],
-        });
+        hiddenModules.add(moduleId);
+        moduleTitles[moduleId] = clone.textContent.trim() || moduleId;
+
+        await persist();
 
         section.classList.add('dhs-hidden');
     });
