@@ -1,0 +1,24 @@
+.dhs-hide-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    padding: 2px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: inherit;
+}
+
+.dhs-hide-button svg {
+    width: 30px;
+    height: 30px;
+}
+
+.dhs-hide-button:hover {
+    opacity: 0.7;
+}
+
+.dhs-hidden {
+    display: none;
+}
