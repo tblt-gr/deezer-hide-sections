@@ -68,7 +68,7 @@ function processSections() {
         if (moduleLink) {
             sectionId = moduleLink.getAttribute('href');
         } else {
-            const title = section.querySelector('h2');
+            const title = section.querySelector('[data-testid="section_title"], h2, h3');
 
             if (!title) {
                 return;
@@ -88,7 +88,7 @@ function processSections() {
 }
 
 function addButton(section, moduleId) {
-    const title = section.querySelector('h2[data-testid="section_title"]');
+    const title = section.querySelector('[data-testid="section_title"]');
 
     if (!title) {
         return;
