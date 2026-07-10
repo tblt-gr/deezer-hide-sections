@@ -4,6 +4,15 @@ const hiddenSections = {};
 
 let hideButtonSvg = '';
 
+// A stored value is either a legacy title string (always hidden) or { title, hidden }.
+function isHidden(value) {
+    if (value === undefined) {
+        return false;
+    }
+
+    return typeof value === 'string' ? true : Boolean(value.hidden);
+}
+
 async function loadSvg() {
     const url = browserAPI.runtime.getURL('icons/hide-button.svg');
     const response = await fetch(url);
@@ -19,7 +28,12 @@ function setHidden(sections) {
 }
 
 async function persist() {
-    await browserAPI.storage.local.set({ hiddenSections });
+    try {
+        await browserAPI.storage.local.set({ hiddenSections });
+    } catch {
+        // Extension was reloaded; this stale content script can no longer reach
+        // storage. Reload the Deezer tab to reconnect.
+    }
 }
 
 async function init() {
@@ -54,7 +68,7 @@ async function init() {
 
 function syncVisibility() {
     document.querySelectorAll('section[data-module-id]').forEach(section => {
-        const hidden = Object.hasOwn(hiddenSections, section.dataset.moduleId);
+        const hidden = isHidden(hiddenSections[section.dataset.moduleId]);
         section.classList.toggle('dhs-hidden', hidden);
     });
 }
@@ -79,9 +93,7 @@ function processSections() {
 
         section.dataset.moduleId = sectionId;
 
-        if (Object.hasOwn(hiddenSections, sectionId)) {
-            section.classList.add('dhs-hidden');
-        }
+        section.classList.toggle('dhs-hidden', isHidden(hiddenSections[sectionId]));
 
         addButton(section, sectionId);
     });
@@ -112,7 +124,7 @@ function addButton(section, moduleId) {
         const clone = title.cloneNode(true);
         clone.querySelectorAll('.dhs-hide-button, .chakra-button, a, button').forEach(el => el.remove());
 
-        hiddenSections[moduleId] = clone.textContent.trim() || moduleId;
+        hiddenSections[moduleId] = { title: clone.textContent.trim() || moduleId, hidden: true };
 
         await persist();
 

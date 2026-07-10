@@ -71,6 +71,10 @@ h1 {
     background: #2a2a2a;
 }
 
+.dhs-list li.dhs-shown {
+    opacity: 0.55;
+}
+
 .dhs-list .dhs-title {
     flex: 1;
     font-size: 13px;

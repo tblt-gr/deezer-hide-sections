@@ -31,7 +31,15 @@ async function importData(file) {
     const importedIds = Object.keys(parsed);
 
     for (const id of importedIds) {
-        hiddenSections[id] = typeof parsed[id] === 'string' ? parsed[id] : id;
+        const value = parsed[id];
+
+        if (typeof value === 'string') {
+            hiddenSections[id] = { title: value, hidden: true };
+        } else if (value && typeof value === 'object') {
+            hiddenSections[id] = { title: value.title || id, hidden: value.hidden !== false };
+        } else {
+            hiddenSections[id] = { title: id, hidden: true };
+        }
     }
 
     await browserAPI.storage.local.set({ hiddenSections });
