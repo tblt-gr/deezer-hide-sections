@@ -10,10 +10,12 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get version from manifest
         id: get_version
@@ -23,15 +25,48 @@ jobs:
 
       - name: Create ZIP archive
         run: |
-          zip -r deezer-hide-sections-${{ env.VERSION }}.zip manifest.json content.js content.css icons popup
+          zip -r "deezer-hide-sections-${VERSION}.zip" . \
+            -x ".git/*" \
+               ".github/*" \
+               "*.md" \
+               ".gitignore" \
+               "*.zip"
+
+      - name: Build changelog
+        id: changelog
+        run: |
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1)
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            RANGE="${PREVIOUS_TAG}..${CURRENT_TAG}"
+          else
+            RANGE="${CURRENT_TAG}"
+          fi
+
+          ADDED=$(git log $RANGE --pretty=format:"%s" | grep -E "^feat(\(.+\))?:" | sed -E "s/^feat(\(.+\))?: ?/- /")
+          FIXED=$(git log $RANGE --pretty=format:"%s" | grep -E "^fix(\(.+\))?:" | sed -E "s/^fix(\(.+\))?: ?/- /")
+
+          {
+            echo "## Added"
+            if [ -n "$ADDED" ]; then echo "$ADDED"; else echo "_No new features._"; fi
+            echo ""
+            echo "## Fixed"
+            if [ -n "$FIXED" ]; then echo "$FIXED"; else echo "_No fixes._"; fi
+            echo ""
+            if [ -n "$PREVIOUS_TAG" ]; then
+              echo "**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/${PREVIOUS_TAG}...${CURRENT_TAG}"
+            fi
+          } > CHANGELOG_RELEASE.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: deezer-hide-sections-${{ env.VERSION }}.zip
-          name: v${{ env.VERSION }}
+          name: ${{ github.ref_name }}
+          body_path: CHANGELOG_RELEASE.md
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
