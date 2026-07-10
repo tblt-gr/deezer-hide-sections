@@ -8,15 +8,6 @@ const importButton = document.getElementById('dhs-import');
 
 let hiddenSections = {};
 
-// A stored value is either a legacy title string (always hidden) or { title, hidden }.
-function isHidden(value) {
-    return typeof value === 'string' ? true : Boolean(value?.hidden);
-}
-
-function getTitle(value, id) {
-    return (typeof value === 'string' ? value : value?.title) || id;
-}
-
 async function render() {
     const result = await browserAPI.storage.local.get('hiddenSections');
 
@@ -47,7 +38,14 @@ async function render() {
         button.textContent = hidden ? 'Show' : 'Hide';
         button.addEventListener('click', () => toggle(id));
 
-        item.append(label, button);
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'dhs-remove';
+        removeButton.textContent = '×';
+        removeButton.title = 'Remove from list';
+        removeButton.addEventListener('click', () => remove(id));
+
+        item.append(label, button, removeButton);
         list.appendChild(item);
     }
 
@@ -86,6 +84,12 @@ async function toggle(id) {
     const title = getTitle(value, id);
 
     hiddenSections[id] = { title, hidden: !isHidden(value) };
+
+    await browserAPI.storage.local.set({ hiddenSections });
+}
+
+async function remove(id) {
+    delete hiddenSections[id];
 
     await browserAPI.storage.local.set({ hiddenSections });
 }

@@ -97,3 +97,10 @@ h1 {
 .dhs-list button:hover {
     opacity: 0.85;
 }
+
+.dhs-list button.dhs-remove {
+    padding: 4px 7px;
+    font-size: 14px;
+    line-height: 1;
+    background: #3a3a3a;
+}

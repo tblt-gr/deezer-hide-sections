@@ -4,15 +4,6 @@ const hiddenSections = {};
 
 let hideButtonSvg = '';
 
-// A stored value is either a legacy title string (always hidden) or { title, hidden }.
-function isHidden(value) {
-    if (value === undefined) {
-        return false;
-    }
-
-    return typeof value === 'string' ? true : Boolean(value.hidden);
-}
-
 async function loadSvg() {
     const url = browserAPI.runtime.getURL('icons/hide-button.svg');
     const response = await fetch(url);
@@ -30,9 +21,10 @@ function setHidden(sections) {
 async function persist() {
     try {
         await browserAPI.storage.local.set({ hiddenSections });
+        return true;
     } catch {
-        // Extension was reloaded; this stale content script can no longer reach
-        // storage. Reload the Deezer tab to reconnect.
+        console.warn('[deezer-hide-sections] could not persist; reload the tab.');
+        return false;
     }
 }
 
@@ -126,9 +118,11 @@ function addButton(section, moduleId) {
 
         hiddenSections[moduleId] = { title: clone.textContent.trim() || moduleId, hidden: true };
 
-        await persist();
-
-        section.classList.add('dhs-hidden');
+        if (await persist()) {
+            section.classList.add('dhs-hidden');
+        } else {
+            delete hiddenSections[moduleId];
+        }
     });
 
     title.appendChild(button);

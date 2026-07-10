@@ -21,7 +21,7 @@ async function importData(file) {
     }
 
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        setStatus('Invalid file: expected an { id: title } object.', true);
+        setStatus('Invalid file: expected a JSON object of sections.', true);
         return;
     }
 
@@ -31,15 +31,7 @@ async function importData(file) {
     const importedIds = Object.keys(parsed);
 
     for (const id of importedIds) {
-        const value = parsed[id];
-
-        if (typeof value === 'string') {
-            hiddenSections[id] = { title: value, hidden: true };
-        } else if (value && typeof value === 'object') {
-            hiddenSections[id] = { title: value.title || id, hidden: value.hidden !== false };
-        } else {
-            hiddenSections[id] = { title: id, hidden: true };
-        }
+        hiddenSections[id] = normalizeSection(parsed[id], id);
     }
 
     await browserAPI.storage.local.set({ hiddenSections });
